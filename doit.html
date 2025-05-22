@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Doit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@400;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      margin: 0;
+      padding: 40px;
+      color: #f0f0f0;
+    }
+
+    h2 {
+      text-align: center;
+      color: #f1c40f;
+      margin-bottom: 30px;
+      font-size: 2em;
+    }
+
+    #logo {
+      width: 40px;
+      height: 40px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    /* General input styling */
+    input[type="text"], input[type="date"] {
+      padding: 8px;
+      margin: 6px 6px 12px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #1e1e2f;
+      color: #fff;
+      font-family: 'Inter', sans-serif; /* Consistent font */
+      vertical-align: middle;
+    }
+     /* Specific styling for date inputs used for editing existing items */
+    .editable-date-input {
+      margin-left: 10px; /* Space it from the label */
+      padding: 4px 6px; /* Make it slightly smaller */
+      font-size: 13px;
+      background: #2a2a3e; /* Slightly different background */
+    }
+    /* Style for the label of the editable date */
+     .date-label {
+         font-size: 13px;
+         color: #aaa;
+         margin-right: 5px;
+         font-family: 'Poppins', sans-serif;
+     }
+
+
+    button {
+      padding: 6px 10px;
+      border: none;
+      background-color: #00bcd4;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 14px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    button:hover {
+      background-color: #00acc1;
+    }
+
+    .goal, .task, .subtask {
+      margin: 12px 0;
+      padding: 16px;
+      background: #1a1a2e;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 255, 255, 0.1); /* Softer shadow */
+      position: relative;
+    }
+
+     /* Item Titles */
+    .goal > strong {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.1em; /* Slightly larger goal title */
+        color: #f1c40f;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .task > .task-label-wrapper > label, /* Target label inside wrapper */
+    .subtask > label {
+        font-family: 'Poppins', sans-serif; /* Keep Poppins for item text */
+        font-weight: normal; /* Normal weight for item text */
+        font-size: 1em;
+        color: #f0f0f0;
+        display: inline-block; /* Allow toggle button next to it */
+        margin-bottom: 5px;
+        vertical-align: middle;
+    }
+     .task > .task-label-wrapper > label > input[type="checkbox"],
+     .subtask > label > input[type="checkbox"] {
+         margin-right: 8px;
+     }
+      /* Wrapper for task label and toggle button */
+     .task-label-wrapper {
+         display: flex;
+         align-items: center;
+         margin-bottom: 8px;
+     }
+
+
+    .task { margin-left: 30px; }
+    .subtask { margin-left: 60px; }
+
+    .progress {
+      height: 8px;
+      background: #333;
+      border-radius: 4px;
+      margin: 8px 0 10px 0;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, #00bcd4, #8bc34a);
+      transition: width 0.3s ease-in-out;
+      width: 0%;
+    }
+
+    .progress-percentage {
+      font-size: 13px;
+      color: #ccc;
+      margin: 4px 0;
+    }
+
+    /* Container for date label and input */
+    .date-container {
+      font-size: 13px;
+      color: #aaa;
+      margin: 6px 0 10px 0;
+      display: flex; /* Align label and input */
+      align-items: center; /* Vertically align */
+    }
+
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: #f1c40f;
+      cursor: pointer;
+      margin-left: 10px;
+      padding: 0 5px; /* Add slight padding */
+      vertical-align: middle;
+    }
+
+    .hide {
+      display: none;
+    }
+
+     /* General label styling for checkboxes */
+    label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 5px;
+    }
+
+    .delete-btn {
+      background: crimson;
+      margin-left: 8px;
+    }
+
+    .delete-btn:hover {
+      background: darkred;
+    }
+
+     /* Position delete buttons absolutely */
+    .goal > .delete-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+    }
+     .task > .delete-btn {
+         position: absolute;
+         top: 12px;
+         right: 12px;
+     }
+     .subtask > .delete-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        padding: 4px 8px; /* Make subtask delete smaller */
+        font-size: 12px;
+     }
+
+    .controls {
+       margin-top: 10px;
+       margin-bottom: 5px;
+    }
+     /* Indent subtask section */
+     .subtask-section {
+         margin-left: 20px;
+         margin-top: 10px;
+         border-left: 2px solid #302b63; /* Add visual indicator */
+         padding-left: 15px;
+     }
+
+  </style>
+</head>
+<body>
+  <h2><img id="logo" src="collection/human-skull-icon-vector-illustration-600nw-2462639725.webp" alt="Skull Logo">Doit</h2>
+  <div style="text-align: center; margin-bottom: 20px;">
+    <input type="text" id="goalInput" placeholder="Enter Goal Title" />
+    <input type="date" id="goalDate" />
+    <button onclick="addGoal()">Add Goal</button>
+    <button class="delete-btn" onclick="clearAllGoals()">Clear All</button>
+  </div>
+  <div id="goalContainer"></div>
+
+  <script>
+    let goals = [];
+
+    /**
+     * Updates the progress bar and percentage text for a given container.
+     * @param {HTMLElement} container - The parent element (e.g., goalDiv, taskDiv).
+     * @param {string} itemSelector - CSS selector for the items to count (e.g., '.subtask input[type="checkbox"]').
+     * @param {string} barSelector - CSS selector for the progress bar element.
+     * @param {string} textSelector - CSS selector for the progress percentage text element.
+     */
+    function updateProgress(container, itemSelector, barSelector, textSelector) {
+      if (!container) {
+          console.error("updateProgress called with null container.");
+          return;
+      }
+      const items = container.querySelectorAll(itemSelector);
+      const total = items.length;
+      let completed = 0;
+      items.forEach(item => {
+          if (item.checked) {
+              completed++;
+          }
+      });
+
+      const progress = total > 0 ? (completed / total) * 100 : 0;
+
+      const bar = container.querySelector(barSelector);
+      const percentageText = container.querySelector(textSelector);
+
+      if (bar) {
+          bar.style.width = `${progress}%`;
+      } else {
+          console.warn(`Progress bar element (${barSelector}) not found in container:`, container);
+      }
+
+      if (percentageText) {
+          percentageText.textContent = `${Math.round(progress)}% Complete`;
+      } else {
+           console.warn(`Progress text element (${textSelector}) not found in container:`, container);
+      }
+    }
+
+    /** Creates HTML elements for a progress bar and its percentage display. */
+    function createProgressBar() {
+      const wrapper = document.createElement("div");
+      const percentage = document.createElement("div");
+      percentage.className = "progress-percentage";
+      percentage.textContent = "0% Complete";
+      const progress = document.createElement("div");
+      progress.className = "progress";
+      const bar = document.createElement("div");
+      bar.className = "progress-bar";
+      progress.appendChild(bar);
+      wrapper.append(percentage, progress);
+      return wrapper;
+    }
+
+     /** Creates an editable date input element */
+    function createEditableDateInput(currentDate, changeHandler) {
+        const container = document.createElement('div');
+        container.className = 'date-container';
+
+        const label = document.createElement('span');
+        label.className = 'date-label';
+        label.textContent = 'Target:';
+
+        const dateInput = document.createElement('input');
+        dateInput.type = 'date';
+        dateInput.className = 'editable-date-input'; // Apply specific style
+        dateInput.value = currentDate || ''; // Set current value or empty if none
+        dateInput.onchange = changeHandler; // Assign the handler for changes
+
+        container.append(label, dateInput);
+        return container;
+    }
+
+
+    /** Generates a simple unique ID. */
+    function generateId() {
+      return "_" + Math.random().toString(36).substr(2, 9);
+    }
+
+    /** Saves the current state of goals to local storage. */
+    function saveToStorage() {
+      localStorage.setItem("goals", JSON.stringify(goals));
+    }
+
+    /** Clears all goals after confirmation. */
+    function clearAllGoals() {
+      if (confirm("Are you sure you want to delete ALL goals and their tasks? This cannot be undone.")) {
+        goals = [];
+        saveToStorage();
+        document.getElementById("goalContainer").innerHTML = "";
+      }
+    }
+
+    /** Renders all goals, tasks, and subtasks from the 'goals' array into the DOM. */
+    function renderGoals() {
+      const container = document.getElementById("goalContainer");
+      container.innerHTML = "";
+
+      if (!Array.isArray(goals)) {
+          console.error("Goals data is not an array!", goals);
+          goals = [];
+      }
+
+      goals.forEach((goal, goalIndex) => {
+        const goalDiv = document.createElement("div");
+        goalDiv.className = "goal";
+        goalDiv.dataset.goalId = goal.id;
+
+        const title = document.createElement("strong");
+        title.textContent = goal.title;
+
+        // --- EDITABLE GOAL DATE ---
+        const goalDateContainer = createEditableDateInput(goal.date, (event) => {
+            goal.date = event.target.value; // Update data model
+            saveToStorage(); // Save the change
+            // No re-render needed just for date change, model is updated.
+        });
+        // --- END EDITABLE GOAL DATE ---
+
+
+        const goalProgress = createProgressBar();
+
+        const taskContainer = document.createElement("div");
+        taskContainer.className = "task-container";
+
+        // --- Add Task Controls ---
+        const taskControlsDiv = document.createElement("div");
+        taskControlsDiv.className = "controls";
+        const taskInput = document.createElement("input");
+        taskInput.type = "text";
+        taskInput.placeholder = "Add New Task";
+        taskInput.id = `taskInput-${goal.id}`;
+        const taskDateInput = document.createElement("input");
+        taskDateInput.type = "date";
+        taskDateInput.id = `taskDate-${goal.id}`;
+        const addTaskBtn = document.createElement("button");
+        addTaskBtn.textContent = "Add Task";
+        addTaskBtn.onclick = () => addTask(goal.id, goalIndex);
+        taskControlsDiv.append(taskInput, taskDateInput, addTaskBtn);
+        // --- End Add Task Controls ---
+
+        const deleteGoalBtn = document.createElement("button");
+        deleteGoalBtn.textContent = "Delete Goal";
+        deleteGoalBtn.className = "delete-btn";
+        deleteGoalBtn.onclick = () => {
+            if (confirm(`Are you sure you want to delete the goal "${goal.title}" and all its tasks?`)) {
+                goals.splice(goalIndex, 1);
+                saveToStorage();
+                renderGoals();
+            }
+        };
+
+        // Append goal elements in order
+        goalDiv.append(title, goalDateContainer, goalProgress, taskControlsDiv, deleteGoalBtn, taskContainer);
+
+        // --- Render Tasks ---
+        if (!Array.isArray(goal.tasks)) goal.tasks = [];
+
+        goal.tasks.forEach((task, taskIndex) => {
+          const taskDiv = document.createElement("div");
+          taskDiv.className = "task";
+          taskDiv.dataset.taskId = task.id;
+
+          // --- Task Label and Toggle ---
+          const taskLabelWrapper = document.createElement('div');
+          taskLabelWrapper.className = 'task-label-wrapper';
+
+          const taskLabel = document.createElement("label");
+          const taskCheckbox = document.createElement("input");
+          taskCheckbox.type = "checkbox";
+          taskCheckbox.id = `task-${task.id}`;
+          taskCheckbox.checked = task.subtasks && task.subtasks.length > 0 && task.subtasks.every(s => s.completed);
+          taskCheckbox.disabled = !task.subtasks || task.subtasks.length === 0;
+          taskCheckbox.onchange = () => {
+             // Reflects subtask status, update goal progress if it changes state
+             updateGoalProgress(goalDiv);
+          };
+          taskLabel.htmlFor = `task-${task.id}`;
+          taskLabel.append(taskCheckbox, document.createTextNode(` ${task.text}`));
+
+          const toggleBtn = document.createElement("button");
+          toggleBtn.className = "toggle-btn";
+          toggleBtn.innerHTML = "▼"; // Default to expanded
+
+           const subtaskSection = document.createElement("div");
+           subtaskSection.className = "subtask-section"; // Style for indentation etc.
+           // subtaskSection.classList.add("hide"); // uncomment to default to collapsed
+
+
+          toggleBtn.onclick = () => {
+            const isHidden = subtaskSection.classList.toggle("hide");
+            toggleBtn.innerHTML = isHidden ? "▶" : "▼";
+          };
+
+          taskLabelWrapper.append(taskLabel, toggleBtn); // Add label and toggle to wrapper
+          // --- End Task Label and Toggle ---
+
+
+          // --- EDITABLE TASK DATE ---
+          const taskDateContainer = createEditableDateInput(task.date, (event) => {
+             task.date = event.target.value;
+             saveToStorage();
+          });
+          // --- END EDITABLE TASK DATE ---
+
+          const taskProgress = createProgressBar();
+
+           // --- Add Subtask Controls ---
+           const subtaskControlsDiv = document.createElement("div");
+           subtaskControlsDiv.className = "controls";
+           const subtaskInput = document.createElement("input");
+           subtaskInput.type = "text";
+           subtaskInput.placeholder = "Add Subtask";
+           subtaskInput.id = `subtaskInput-${task.id}`;
+           const subtaskDateInput = document.createElement("input");
+           subtaskDateInput.type = "date";
+           subtaskDateInput.id = `subtaskDate-${task.id}`;
+           const addSubBtn = document.createElement("button");
+           addSubBtn.textContent = "Add Subtask";
+           addSubBtn.onclick = () => addSubtask(goalIndex, taskIndex, task.id);
+           subtaskControlsDiv.append(subtaskInput, subtaskDateInput, addSubBtn);
+           // --- End Add Subtask Controls ---
+
+          const deleteTaskBtn = document.createElement("button");
+          deleteTaskBtn.textContent = "Delete Task";
+          deleteTaskBtn.className = "delete-btn";
+          deleteTaskBtn.onclick = () => {
+               if (confirm(`Are you sure you want to delete the task "${task.text}"?`)) {
+                    goal.tasks.splice(taskIndex, 1);
+                    saveToStorage();
+                    renderGoals();
+               }
+          };
+
+          // Append task elements in order
+          taskDiv.append(taskLabelWrapper, taskDateContainer, taskProgress, subtaskControlsDiv, deleteTaskBtn, subtaskSection);
+
+
+          // --- Render Subtasks ---
+          if (!Array.isArray(task.subtasks)) task.subtasks = [];
+
+          task.subtasks.forEach((sub, subIndex) => {
+            const subDiv = document.createElement("div");
+            subDiv.className = "subtask";
+
+            const subLabel = document.createElement("label");
+            const subCheckbox = document.createElement("input");
+            subCheckbox.type = "checkbox";
+            subCheckbox.checked = sub.completed;
+            subCheckbox.id = `subtask-${goal.id}-${task.id}-${subIndex}`;
+            subCheckbox.onchange = () => {
+              sub.completed = subCheckbox.checked;
+              saveToStorage();
+              updateProgress(taskDiv, '.subtask input[type="checkbox"]', ".progress-bar", ".progress-percentage");
+              taskCheckbox.checked = task.subtasks.every(s => s.completed);
+              taskCheckbox.disabled = task.subtasks.length === 0; // Re-evaluate disable state
+              updateGoalProgress(goalDiv);
+            };
+            subLabel.htmlFor = subCheckbox.id;
+            subLabel.append(subCheckbox, document.createTextNode(` ${sub.text}`));
+
+
+             // --- EDITABLE SUBTASK DATE ---
+             const subDateContainer = createEditableDateInput(sub.date, (event) => {
+                 sub.date = event.target.value;
+                 saveToStorage();
+             });
+             // --- END EDITABLE SUBTASK DATE ---
+
+
+            const deleteSubBtn = document.createElement("button");
+            deleteSubBtn.textContent = "Delete";
+            deleteSubBtn.className = "delete-btn";
+            deleteSubBtn.onclick = () => {
+              task.subtasks.splice(subIndex, 1);
+              saveToStorage();
+              renderGoals(); // Re-render needed
+            };
+
+            // Append subtask elements in order
+            subDiv.append(subLabel, subDateContainer, deleteSubBtn);
+            subtaskSection.appendChild(subDiv);
+          }); // End subtask loop
+
+          // Update TASK progress AFTER rendering its subtasks
+          updateProgress(taskDiv, '.subtask input[type="checkbox"]', ".progress-bar", ".progress-percentage");
+
+          taskContainer.appendChild(taskDiv);
+        }); // End task loop
+
+
+        // Update GOAL progress AFTER rendering all its tasks
+        updateGoalProgress(goalDiv);
+
+        container.appendChild(goalDiv);
+      }); // End goal loop
+    }
+
+    /** Helper function to update progress for a specific goal container */
+    function updateGoalProgress(goalDivElement) {
+        if (goalDivElement) {
+            updateProgress(goalDivElement, '.task > .task-label-wrapper > label > input[type="checkbox"]', ".progress-bar", ".progress-percentage");
+        } else {
+             console.warn("Attempted to update progress on a non-existent goalDivElement");
+        }
+    }
+
+
+    /** Adds a new goal to the list and re-renders. */
+    function addGoal() {
+      const titleInput = document.getElementById("goalInput");
+      const dateInput = document.getElementById("goalDate");
+      const title = titleInput.value.trim();
+      const date = dateInput.value; // Get date value
+
+      if (!title) {
+          alert("Please enter a title for the goal.");
+          return;
+      }
+      const newGoal = {
+        id: generateId(),
+        title,
+        date: date || null, // Store date or null if empty
+        tasks: []
+      };
+      goals.push(newGoal);
+      saveToStorage();
+      renderGoals();
+
+      titleInput.value = "";
+      dateInput.value = ""; // Clear date input
+    }
+
+    /** Adds a new task to a specific goal and re-renders. */
+    function addTask(goalId, goalIndex) {
+        const taskInput = document.getElementById(`taskInput-${goalId}`);
+        const taskDateInput = document.getElementById(`taskDate-${goalId}`);
+        const taskVal = taskInput.value.trim();
+        const taskDate = taskDateInput.value; // Get date value
+
+        if (taskVal) {
+            const newTask = {
+              id: generateId(),
+              text: taskVal,
+              date: taskDate || null, // Store date or null
+              completed: false,
+              subtasks: []
+            };
+             const goal = goals[goalIndex];
+             if (goal && goal.id === goalId) {
+                 if (!Array.isArray(goal.tasks)) goal.tasks = [];
+                 goal.tasks.push(newTask);
+                 saveToStorage();
+                 renderGoals();
+            } else {
+                 console.error("Goal not found for adding task, ID:", goalId, "Index:", goalIndex);
+                 alert("Error: Could not find the goal to add the task to.");
+             }
+              taskInput.value = "";
+              taskDateInput.value = ""; // Clear date input
+        } else {
+            alert("Please enter text for the task.");
+        }
+    }
+
+     /** Adds a new subtask to a specific task and re-renders. */
+    function addSubtask(goalIndex, taskIndex, taskId) {
+        const subtaskInput = document.getElementById(`subtaskInput-${taskId}`);
+        const subtaskDateInput = document.getElementById(`subtaskDate-${taskId}`);
+        const subtaskVal = subtaskInput.value.trim();
+        const subtaskDate = subtaskDateInput.value; // Get date value
+
+         if (subtaskVal) {
+            const newSubtask = {
+              text: subtaskVal,
+              date: subtaskDate || null, // Store date or null
+              completed: false
+            };
+
+            const goal = goals[goalIndex];
+            if (goal && goal.tasks && goal.tasks[taskIndex] && goal.tasks[taskIndex].id === taskId) {
+                 if (!Array.isArray(goal.tasks[taskIndex].subtasks)) goal.tasks[taskIndex].subtasks = [];
+                 goal.tasks[taskIndex].subtasks.push(newSubtask);
+                 saveToStorage();
+                 renderGoals();
+            } else {
+                 console.error("Task not found for adding subtask. GoalIndex:", goalIndex, "TaskIndex:", taskIndex, "TaskID:", taskId);
+                 alert("Error: Could not find the task to add the subtask to.");
+            }
+            subtaskInput.value = "";
+            subtaskDateInput.value = ""; // Clear date input
+        } else {
+            alert("Please enter text for the subtask.");
+        }
+    }
+
+
+    /** Loads goals from local storage when the page loads. */
+    function loadGoals() {
+      const storedGoals = localStorage.getItem("goals");
+      if (storedGoals) {
+        try {
+          goals = JSON.parse(storedGoals);
+          if (!Array.isArray(goals)) {
+              console.warn("Loaded data is not an array, resetting.");
+              goals = [];
+          } else {
+              // Ensure nested arrays exist
+              goals.forEach(goal => {
+                  goal.tasks = goal.tasks || [];
+                  goal.tasks.forEach(task => {
+                      task.subtasks = task.subtasks || [];
+                  });
+              });
+          }
+        } catch (e) {
+            console.error("Error parsing goals from localStorage:", e);
+            goals = [];
+            localStorage.removeItem("goals");
+        }
+      } else {
+          goals = [];
+      }
+      renderGoals();
+    }
+
+    // Load goals when the page is fully loaded
+    window.onload = loadGoals;
+  </script>
+</body>
+</html>
